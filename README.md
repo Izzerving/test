@@ -1,4 +1,4 @@
-# AnonKeyMail
+# Time Email Com
 
 > ⚠️ **Warning:** Это Beta-версия. Данные могут быть удалены. Не используйте для важной почты.
 
@@ -85,7 +85,7 @@ POSTGRES_PASSWORD="change_postgres_password"
 POSTGRES_DB="anonkeymail"
 
 # Public app metadata
-NEXT_PUBLIC_APP_NAME="AnonKeyMail"
+NEXT_PUBLIC_APP_NAME="Time Email Com"
 NEXT_PUBLIC_APP_DOMAIN="www.time-email.com"
 PRIMARY_MAIL_DOMAIN="mail-free-1.time-email.net"
 
