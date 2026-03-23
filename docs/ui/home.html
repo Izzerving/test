@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time Email — анонимная временная почта</title>
+  <style>
+    :root{
+      --bg:#0b0b0f;--card:#151522;--soft:#1d1d2d;--line:#30304a;--text:#f3f3fb;--muted:#a8a8bf;
+      --danger:#b91c1c;--danger-text:#ffffff;--modal-bg:#171726;--modal-body:#11111a;--modal-text:#f3f3fb;--toast-bg:#1b243f;--toast-text:#dce9ff;
+    }
+    body.light{
+      --bg:#f4f7ff;--card:#ffffff;--soft:#eef2ff;--line:#cfd8f3;--text:#1b2440;--muted:#5b678e;
+      --danger:#d14d4d;--danger-text:#ffffff;--modal-bg:#ffffff;--modal-body:#f8faff;--modal-text:#1b2440;--toast-bg:#edf3ff;--toast-text:#2b3b66;
+    }
+    body.cyberpunk{--bg:#120016;--card:#240a2f;--soft:#2c1038;--line:#7f2ca3;--text:#ffe7ff;--muted:#ddb5ef;--danger:#ff4b7d;--danger-text:#ffffff;--modal-bg:#240a2f;--modal-body:#1f0a28;--modal-text:#ffe7ff;--toast-bg:#320f4d;--toast-text:#ffe7ff}
+    body.matrix{--bg:#020602;--card:#091109;--soft:#0e1b0f;--line:#1b4620;--text:#bdffbd;--muted:#79d779;--danger:#d13f3f;--danger-text:#ffffff;--modal-bg:#091109;--modal-body:#0c1f0f;--modal-text:#bdffbd;--toast-bg:#0c1f0f;--toast-text:#bdffbd}
+
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Arial;background:radial-gradient(90% 100% at 10% 0%,#1f174a 0%,var(--bg) 55%);color:var(--text);position:relative}
+    body.light{background:linear-gradient(180deg,#f7f9ff 0%,#edf2ff 100%)}
+    #matrixCanvas{display:none;position:fixed;inset:0;z-index:-1;opacity:.28;pointer-events:none}
+    body.matrix #matrixCanvas{display:block}
+
+    .top{position:sticky;top:0;z-index:10;background:#0b0b0fd9;border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
+    body.light .top{background:#f7f9ffde}
+
+    .wrap{max-width:1040px;margin:0 auto;padding:12px 16px}
+    .nav{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .logo .topline,.logo .botline{display:block;font-size:12px;color:var(--muted);margin:0}
+    .logo .title{font-size:34px;font-weight:900;line-height:1.05;letter-spacing:.02em;margin:4px 0}
+
+    .right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+    .row{display:flex;gap:6px;flex-wrap:wrap}
+    .btn,.select,.input{
+      border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:9px;padding:7px 10px;
+      font-size:13px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;cursor:pointer
+    }
+    .btn.danger{background:var(--danger);color:var(--danger-text);font-weight:700}
+    .btn.icon{min-width:38px;padding:7px}
+    .select{appearance:none;padding-right:28px;background-image:linear-gradient(45deg,transparent 50%,var(--text) 50%),linear-gradient(135deg,var(--text) 50%,transparent 50%);background-position:calc(100% - 14px) 53%,calc(100% - 9px) 53%;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+    .lang{font-size:17px;padding:4px 8px}
+
+    .style-menu{position:relative}
+    .menu{position:absolute;right:0;top:42px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px;display:none;min-width:190px}
+    .menu.show{display:block}
+    .menu button{width:100%;justify-content:flex-start;margin:3px 0}
+
+    main{padding-bottom:12px}
+    .card{background:linear-gradient(180deg,#171726,#13131d);border:1px solid var(--line);border-radius:14px;padding:12px}
+    body.light .card, body.cyberpunk .card, body.matrix .card{background:var(--card)}
+
+    .mail-card{min-height:88px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+    .mail-line{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:15px}
+    .mailbox{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:700;background:#0f0f17;border:1px solid var(--line);border-radius:10px;padding:6px 9px}
+    body.light .mailbox{background:#f8faff}
+    .timer{border:1px solid #44508a;background:#121936;color:#9fd2ff;padding:6px 9px;border-radius:10px;font-weight:700;white-space:nowrap;font-size:13px}
+    .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;justify-content:center}
+
+    .table-wrap{margin-top:12px;overflow:auto}
+    table{width:100%;border-collapse:separate;border-spacing:0;background:#11111a;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+    body.light table{background:#f8faff}
+    th,td{padding:10px 8px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
+    th{background:#171727;color:#b8b8cf}
+    body.light th{background:#ebf0ff;color:#4a567a}
+    tr:last-child td{border-bottom:none}
+    .sender{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.25;gap:2px}
+    .sender .name{font-weight:700}
+    .sender .email{color:var(--muted);font-size:12px}
+    .subject{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .inline-actions{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+    .mini{padding:5px 9px;border-radius:8px;font-size:12px}
+
+    .foot{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding:16px 0 6px;font-size:13px}
+    .foot a{color:var(--text);text-decoration:none;border:1px solid var(--line);background:var(--soft);border-radius:9px;padding:7px 10px;display:inline-flex}
+
+    .modal{position:fixed;inset:0;background:#000000a8;display:none;align-items:center;justify-content:center;padding:12px;z-index:20}
+    .modal.show{display:flex}
+    .modal-card{width:min(900px,96vw);height:min(85vh,720px);background:var(--modal-bg);color:var(--modal-text);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
+    .modal-top{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);gap:10px}
+    .modal-body{padding:14px;overflow:auto;background:var(--modal-body);color:var(--modal-text)}
+    .dialog{width:min(380px,95vw);height:auto;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:14px}
+    .x{border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:8px;padding:7px 10px;cursor:pointer}
+
+    .toast{
+      position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
+      background:var(--toast-bg);color:var(--toast-text);padding:11px 15px;border-radius:12px;
+      font-weight:700;opacity:0;pointer-events:none;transition:.2s;border:1px solid var(--line);z-index:99;
+      box-shadow:0 8px 24px rgba(0,0,0,.22)
+    }
+    .toast.show{opacity:1}
+
+    @media (max-width:900px){
+      .logo .title{font-size:28px}
+      .subject{max-width:160px}
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrixCanvas"></canvas>
+
+  <header class="top">
+    <div class="wrap nav">
+      <div class="logo">
+        <small class="topline">Временная почта без трекинга и рекламы! Без логов!</small>
+        <div class="title">TIME EMAIL</div>
+        <small class="botline">Создайте ящик в 1 клик. Получайте письма в realtime. Никаких логинов/паролей — только ключ доступа.</small>
+      </div>
+      <div class="right">
+        <div class="row">
+          <div class="style-menu">
+            <button class="btn icon" id="styleBtn" title="Стиль сайта">🎨</button>
+            <div class="menu" id="styleMenu">
+              <button class="btn" data-theme="">🎨 Default Dark</button>
+              <button class="btn" data-theme="light">🌤 Light</button>
+              <button class="btn" data-theme="cyberpunk">🌈 Cyberpunk</button>
+              <button class="btn" data-theme="matrix">🟩 Matrix</button>
+            </div>
+          </div>
+          <button class="btn" id="loginBtn">Войти</button>
+          <button class="btn" id="regBtn">Регистрация</button>
+        </div>
+        <div class="row">
+          <button class="btn lang" title="Русский">🇷🇺</button>
+          <button class="btn lang" title="English">🇬🇧</button>
+          <button class="btn lang" title="Deutsch">🇩🇪</button>
+          <button class="btn lang" title="中文">🇨🇳</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="card mail-card">
+      <div class="mail-line"><strong>Ваша временная почта</strong></div>
+      <div class="mail-line"><span class="mailbox" id="mailboxText">x51ksrcjs@time-email.net</span><span>выдана на</span><span class="timer"><span id="timer">59:42</span></span></div>
+      <div class="actions">
+        <button class="btn" id="copyBtn">Копировать</button>
+        <button class="btn" id="createBtn" style="display:none">Создать</button>
+        <button class="btn danger" id="deleteBtn">Удалить</button>
+        <select class="select" id="extendSelect">
+          <option value="" selected disabled>Продлить</option>
+          <option value="30">30 минут</option>
+          <option value="180">3 часа</option>
+          <option value="more">*больше*</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Время</th>
+            <th>Отправитель</th>
+            <th>Тема</th>
+            <th>Действия</th>
+          </tr>
+        </thead>
+        <tbody id="inboxBody"></tbody>
+      </table>
+    </section>
+
+    <footer class="foot">
+      <a href="/about">Инфо</a>
+      <a href="/privacy">Privacy</a>
+      <a href="/pricing">Тарифы</a>
+      <a href="/contact">Контакты</a>
+    </footer>
+  </main>
+
+  <div class="modal" id="letterModal">
+    <div class="modal-card">
+      <div class="modal-top">
+        <div style="font-weight:700">Письмо</div>
+        <div class="row">
+          <button class="btn" id="downloadHtmlBtn">Скачать HTML</button>
+          <button class="btn" id="openNewTabBtn">Открыть в новой вкладке</button>
+          <button class="btn" id="closeModalBtn">Закрыть</button>
+        </div>
+      </div>
+      <div class="modal-body" id="letterBody"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="loginModal">
+    <div class="dialog">
+      <h3 style="margin:0 0 10px">Вход</h3>
+      <input class="input" style="width:100%;margin-bottom:8px" placeholder="Ключ доступа">
+      <div class="row" style="justify-content:flex-end">
+        <button class="btn" data-close="loginModal">Отмена</button>
+        <a class="btn" href="/dashboard">Войти</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="regModal">
+    <div class="dialog">
+      <h3 style="margin:0 0 10px">Регистрация</h3>
+      <label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--muted)">
+        <input type="checkbox">Согласен с условиями и политикой конфиденциальности
+      </label>
+      <div class="row" style="justify-content:flex-end;margin-top:10px">
+        <button class="btn" data-close="regModal">Отмена</button>
+        <a class="btn" href="/dashboard">Зарегистрироваться</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Скопировано</div>
+
+  <script>
+    const isAuthorized = false;
+    const letters = [
+      { time:'21:45', senderName:'Security Team', senderEmail:'verify@service.com', subject:'Подтверждение email в сервисе', html:`<!doctype html><html><body style="font-family:Arial;padding:20px"><h2>Подтвердите ваш email</h2><p>Код: <b>749281</b></p><p><a href="https://example.com/activate?code=749281">Активировать</a></p></body></html>` },
+      { time:'20:11', senderName:'GitHub', senderEmail:'noreply@github.com', subject:'Verify your email address for account', html:`<!doctype html><html><body style="font-family:Arial;padding:20px;background:#f7f7f9"><div style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px"><h2 style="margin:0 0 8px">Verify your email</h2><p>Please confirm your email for GitHub account.</p><p>Code: <b>884220</b></p></div></body></html>` }
+    ];
+
+    const inboxBody = document.getElementById('inboxBody');
+    const modal = document.getElementById('letterModal');
+    const letterBody = document.getElementById('letterBody');
+    const toast = document.getElementById('toast');
+    let openedLetter = null;
+
+    function showToast(text){
+      toast.textContent = text;
+      toast.classList.add('show');
+      setTimeout(()=>toast.classList.remove('show'),1300);
+    }
+
+    if (isAuthorized) document.getElementById('createBtn').style.display = 'inline-flex';
+
+    function truncateSubject(text){ return text.length > 20 ? text.slice(0,20) + '…' : text; }
+    function generateMailbox(){ return 'x' + Math.random().toString(36).slice(2,10) + '@time-email.net'; }
+
+    function sanitizeLetterHtml(input){
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(input, 'text/html');
+
+      doc.querySelectorAll('script,iframe,object,embed,link,meta[http-equiv="refresh"],source,video,audio,svg,img,picture').forEach((el)=>el.remove());
+
+      doc.querySelectorAll('*').forEach((el)=>{
+        [...el.attributes].forEach((attr)=>{
+          const n = attr.name.toLowerCase();
+          const v = attr.value || '';
+          if(n.startsWith('on')) el.removeAttribute(attr.name);
+          if(['src','srcset','data','poster'].includes(n)) el.removeAttribute(attr.name);
+          if((n === 'style') && /url\(/i.test(v)) el.removeAttribute('style');
+        });
+      });
+
+      doc.querySelectorAll('a').forEach((a)=>{
+        const href = (a.getAttribute('href') || '').trim();
+        const safe = /^https?:\/\//i.test(href) || href.startsWith('mailto:') || href.startsWith('#') || href.startsWith('/');
+        if(!safe){
+          a.removeAttribute('href');
+        }else{
+          a.setAttribute('target','_blank');
+          a.setAttribute('rel','noopener noreferrer');
+          a.setAttribute('referrerpolicy','no-referrer');
+        }
+      });
+
+      return '<!doctype html>\n' + doc.documentElement.outerHTML;
+    }
+
+    function renderInbox(){
+      inboxBody.innerHTML='';
+      letters.forEach((letter, idx)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="text-align:center">${letter.time}</td>
+          <td><div class="sender"><div class="name">${letter.senderName}</div><div class="email">${letter.senderEmail}</div></div></td>
+          <td><div class="subject" title="${letter.subject}">${truncateSubject(letter.subject)}</div></td>
+          <td><div class="inline-actions"><button class="btn mini" data-open="${idx}">Открыть</button><button class="btn mini danger" data-delete="${idx}">Удалить</button></div></td>`;
+        inboxBody.appendChild(tr);
+      });
+    }
+
+    function openLetter(index){
+      openedLetter = letters[index];
+      if(!openedLetter) return;
+      const safeHtml = sanitizeLetterHtml(openedLetter.html);
+      letterBody.innerHTML = safeHtml;
+      modal.classList.add('show');
+    }
+
+    function openLetterInNewTab(letter){
+      const win = window.open('', '_blank');
+      if (!win) { alert('Всплывающие окна заблокированы. Разрешите pop-up и попробуйте снова.'); return false; }
+      const safeHtml = sanitizeLetterHtml(letter.html);
+      win.document.open(); win.document.write(safeHtml); win.document.close(); return true;
+    }
+
+    inboxBody.addEventListener('click', (e)=>{
+      const openIdx = e.target.getAttribute('data-open');
+      const delIdx = e.target.getAttribute('data-delete');
+      if(openIdx !== null) openLetter(Number(openIdx));
+      if(delIdx !== null){ letters.splice(Number(delIdx),1); renderInbox(); }
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', async ()=>{
+      await navigator.clipboard.writeText(document.getElementById('mailboxText').textContent.trim());
+      showToast('Скопировано');
+    });
+
+    document.getElementById('deleteBtn').addEventListener('click', ()=>{
+      letters.length = 0; document.getElementById('mailboxText').textContent = generateMailbox(); renderInbox();
+    });
+
+    document.getElementById('createBtn').addEventListener('click', ()=>{
+      if(!isAuthorized){ location.href='/pricing'; return; }
+      if(confirm('Удалить действующий ящик и создать новый?')){ letters.length=0; document.getElementById('mailboxText').textContent=generateMailbox(); renderInbox(); }
+    });
+
+    document.getElementById('extendSelect').addEventListener('change', (e)=>{
+      if(e.target.value==='more'){ location.href='/pricing'; return; }
+      showToast('Продлено на ' + e.target.value + ' мин');
+      e.target.selectedIndex=0;
+    });
+
+    document.getElementById('closeModalBtn').addEventListener('click', ()=> modal.classList.remove('show'));
+    document.getElementById('openNewTabBtn').addEventListener('click', ()=> openedLetter && openLetterInNewTab(openedLetter));
+    document.getElementById('downloadHtmlBtn').addEventListener('click', ()=>{
+      if(!openedLetter) return;
+      const safeHtml = sanitizeLetterHtml(openedLetter.html);
+      const blob = new Blob([safeHtml], { type:'text/html;charset=utf-8' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `letter-${Date.now()}.html`; a.click(); URL.revokeObjectURL(a.href);
+    });
+
+    const styleBtn = document.getElementById('styleBtn');
+    const styleMenu = document.getElementById('styleMenu');
+    styleBtn.addEventListener('click', ()=> styleMenu.classList.toggle('show'));
+    styleMenu.addEventListener('click', (e)=>{
+      const theme = e.target.getAttribute('data-theme');
+      if(theme !== null){ document.body.className = theme; styleMenu.classList.remove('show'); }
+      toggleMatrix();
+    });
+
+    function openModal(id){ document.getElementById(id).classList.add('show'); }
+    function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+    document.getElementById('loginBtn').addEventListener('click', ()=>openModal('loginModal'));
+    document.getElementById('regBtn').addEventListener('click', ()=>openModal('regModal'));
+    document.querySelectorAll('[data-close]').forEach((btn)=>btn.addEventListener('click', ()=>closeModal(btn.getAttribute('data-close'))));
+    document.querySelectorAll('.modal').forEach((m)=>m.addEventListener('click',(e)=>{ if(e.target===m) m.classList.remove('show'); }));
+
+    const canvas = document.getElementById('matrixCanvas');
+    const ctx = canvas.getContext('2d');
+    let matrixTimer = null;
+    function startMatrix(){
+      if(matrixTimer) return;
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&*+-=<>';
+      const fontSize = 14;
+      function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+      resize();
+      window.addEventListener('resize', resize);
+      const cols = () => Math.floor(canvas.width / fontSize);
+      let drops = Array(cols()).fill(1);
+      matrixTimer = setInterval(()=>{
+        if(document.body.className !== 'matrix') return;
+        ctx.fillStyle = 'rgba(2,6,2,0.12)';
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = '#43ff66';
+        ctx.font = fontSize + 'px monospace';
+        if(drops.length !== cols()) drops = Array(cols()).fill(1);
+        for(let i=0;i<drops.length;i++){
+          const text = chars.charAt(Math.floor(Math.random()*chars.length));
+          ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+          if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+          drops[i]++;
+        }
+      }, 50);
+    }
+    function toggleMatrix(){
+      if(document.body.className === 'matrix') startMatrix();
+    }
+
+    renderInbox();
+    toggleMatrix();
+  </script>
+</body>
+</html>

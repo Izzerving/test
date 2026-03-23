@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+
+body {
+  @apply bg-background text-foreground antialiased;
+}
+
+.panel {
+  @apply rounded-xl border border-border bg-card p-6;
+}

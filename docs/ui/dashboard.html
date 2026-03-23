@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TIME EMAIL — Личный кабинет (Preview)</title>
+  <style>
+    :root{--bg:#0b0b0f;--card:#151522;--soft:#1d1d2d;--line:#30304a;--text:#f3f3fb;--muted:#a8a8bf;--danger:#c74848}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui;background:radial-gradient(90% 100% at 10% 0%,#1f174a 0%,var(--bg) 55%);color:var(--text)}
+    .wrap{max-width:1180px;margin:0 auto;padding:14px 16px}
+    .top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+    .brand{font-size:30px;font-weight:900;letter-spacing:.03em}.muted{color:var(--muted)}
+    .btn,.tab{border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:10px;padding:8px 11px;text-decoration:none;display:inline-flex;align-items:center;cursor:pointer}
+    .tab.active{background:#312a63}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+    .card{background:linear-gradient(180deg,#171726,#13131d);border:1px solid var(--line);border-radius:14px;padding:12px}
+    .layout{display:grid;gap:12px;grid-template-columns:320px 1fr}
+    .leftcol{max-height:70vh;overflow:auto}
+    .box{border:1px solid var(--line);background:#11111a;border-radius:10px;padding:9px;margin-bottom:8px}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+    .date{font-size:12px;color:var(--muted);margin:10px 0 6px}
+    table{width:100%;border-collapse:separate;border-spacing:0;background:#11111a;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+    th,td{padding:10px 8px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
+    th{background:#171727;color:#b8b8cf;text-align:left} tr:last-child td{border-bottom:none}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .danger{background:#3f1a1a;border-color:#6b2c2c}
+    .hide{display:none}
+    @media(max-width:980px){.layout{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="top">
+      <div>
+        <div class="muted">TIME EMAIL</div>
+        <div class="brand">Личный кабинет</div>
+      </div>
+      <div class="row">
+        <a class="btn" href="/">На главную</a>
+        <a class="btn" href="/pricing">Тарифы</a>
+      </div>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="active">Активные</button>
+      <button class="tab" data-tab="history">История почтовых ящиков</button>
+      <button class="tab" data-tab="security">Безопасность</button>
+      <button class="tab" data-tab="tariff">Тариф</button>
+      <button class="tab" data-tab="delete">Удалить профиль</button>
+    </nav>
+
+    <section id="tab-active" class="tab-panel">
+      <div class="card" style="margin-bottom:12px">
+        <h3 style="margin:0 0 8px">Создать почтовый ящик</h3>
+        <button class="btn">Создать почтовый ящик</button>
+      </div>
+      <div class="layout">
+        <aside class="card leftcol">
+          <h3 style="margin-top:0">Активные ящики</h3>
+          <div class="date">08.11.2026</div>
+          <div class="box"><div class="mono">alex01@mail-prem-1.time-email.net</div><div class="muted">До: 08.11.2026, 19:30</div></div>
+          <div class="box"><div class="mono">alex02@mail-prem-2.time-email.net</div><div class="muted">До: 08.11.2026, 21:00</div></div>
+        </aside>
+        <section class="card">
+          <h3 style="margin-top:0">Письма выбранного ящика</h3>
+          <table>
+            <thead><tr><th>Дата</th><th>Отправитель</th><th>Тема</th><th>Действия</th></tr></thead>
+            <tbody>
+              <tr><td>08.11 17:20</td><td>verify@service.com</td><td>Подтверждение email</td><td><button class="btn">Открыть</button> <button class="btn danger">Удалить</button></td></tr>
+              <tr><td>08.11 16:02</td><td>noreply@github.com</td><td>Verify your email</td><td><button class="btn">Открыть</button> <button class="btn danger">Удалить</button></td></tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </section>
+
+    <section id="tab-history" class="tab-panel hide">
+      <div class="layout">
+        <aside class="card leftcol">
+          <h3 style="margin-top:0">История ящиков</h3>
+          <input class="btn" style="width:100%;justify-content:flex-start" placeholder="Поиск по адресу" />
+          <div class="date">06.11.2026</div>
+          <div class="box"><div class="mono">old1@mail-free.time-email.net</div><button class="btn" style="margin-top:8px;width:100%" disabled>Активировать</button></div>
+          <div class="date">05.11.2026</div>
+          <div class="box"><div class="mono">old2@mail-prem-1.time-email.net</div><button class="btn" style="margin-top:8px;width:100%">Активировать</button></div>
+        </aside>
+        <section class="card">
+          <h3 style="margin-top:0">Письма из истории</h3>
+          <table>
+            <thead><tr><th>Дата</th><th>Отправитель</th><th>Тема</th><th>Действия</th></tr></thead>
+            <tbody>
+              <tr><td>05.11 12:05</td><td>security@site.com</td><td>Login code 661822</td><td><button class="btn">Открыть</button> <button class="btn danger">Удалить</button></td></tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </section>
+
+    <section id="tab-security" class="tab-panel hide">
+      <div class="layout">
+        <section class="card">
+          <h3 style="margin-top:0">Последние входы и время на сайте</h3>
+          <div class="box"><b>91.221.10.20</b><div class="muted">Chrome / Windows • 53 мин</div></div>
+          <div class="box"><b>91.221.10.20</b><div class="muted">Safari / iPhone • 14 мин</div></div>
+        </section>
+        <aside class="card">
+          <h3 style="margin-top:0">Настройки безопасности</h3>
+          <div class="muted">Автоудаление за неактивность</div>
+          <select class="btn" style="width:100%;margin:8px 0"><option>30 дней</option><option>90 дней</option><option>1 год</option></select>
+          <button class="btn" style="width:100%;margin-bottom:8px">Сохранить</button>
+          <button class="btn danger" style="width:100%">Очистить всю историю ящиков и логи</button>
+        </aside>
+      </div>
+    </section>
+
+    <section id="tab-tariff" class="tab-panel hide">
+      <section class="card">
+        <h3 style="margin-top:0">Тарифы и сравнение</h3>
+        <table>
+          <thead><tr><th>Параметр</th><th>Free</th><th>Premium</th><th>Unlimited</th></tr></thead>
+          <tbody>
+            <tr><td>Активных ящиков</td><td>1</td><td>20</td><td>100+</td></tr>
+            <tr><td>Продление</td><td>до 3 часов</td><td>до 30 дней</td><td>до 30 дней</td></tr>
+            <tr><td>Домены</td><td>базовые</td><td>premium pool</td><td>custom + unlimited</td></tr>
+            <tr><td>Цена</td><td>$0</td><td>от $9</td><td>$1000</td></tr>
+          </tbody>
+        </table>
+        <div class="row" style="margin-top:10px">
+          <select class="btn"><option>Premium — 1 месяц</option><option>Premium — 3 месяца</option><option>Premium — 6 месяцев</option><option>Premium — 1 год</option></select>
+          <button class="btn">Купить Premium</button>
+          <button class="btn">Купить Unlimited ($1000)</button>
+        </div>
+      </section>
+    </section>
+
+    <section id="tab-delete" class="tab-panel hide">
+      <section class="card" style="border-color:#5f2d2d;background:#1b1111">
+        <h3 style="margin-top:0;color:#ffb4b4">Удалить профиль</h3>
+        <p class="muted">Удаляются профиль, история ящиков, письма и платежи без возможности восстановления.</p>
+        <button class="btn danger">Удалить профиль</button>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const tabs = document.querySelectorAll('.tab');
+    const panels = {
+      active: document.getElementById('tab-active'),
+      history: document.getElementById('tab-history'),
+      security: document.getElementById('tab-security'),
+      tariff: document.getElementById('tab-tariff'),
+      delete: document.getElementById('tab-delete')
+    };
+    tabs.forEach((tab)=>{
+      tab.addEventListener('click', ()=>{
+        tabs.forEach((t)=>t.classList.remove('active'));
+        tab.classList.add('active');
+        Object.values(panels).forEach((p)=>p.classList.add('hide'));
+        panels[tab.dataset.tab].classList.remove('hide');
+      });
+    });
+  </script>
+</body>
+</html>

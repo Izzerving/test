@@ -1,0 +1,12 @@
+.git
+node_modules
+npm-debug.log*
+.env
+.env.local
+.env.*.local
+docs
+ALL_BRANCHES_AUDIT_REPORT.md
+DEVELOPMENT_PLAN_RU.md
+PROJECT_STATUS_REPORT.md
+REPO_STATUS_REVIEW_RU.md
+WORKING_BRANCH_POLICY.md
