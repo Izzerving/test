@@ -25,8 +25,15 @@ generate_domains_file() {
   tmp_file="${DOMAINS_FILE}.tmp"
   {
     echo "# Auto-generated $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-    psql "postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT}/${PGDATABASE}" -At -c \
-      "SELECT name FROM \"Domain\" WHERE status = 'active' ORDER BY name;"
+    table_exists=$(psql "postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT}/${PGDATABASE}" -At -c \
+      "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'Domain');" 2>/dev/null || echo "f")
+
+    if [ "$table_exists" = "t" ]; then
+      psql "postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT}/${PGDATABASE}" -At -c \
+        "SELECT name FROM \"Domain\" WHERE status = 'active' ORDER BY name;" 2>/dev/null || true
+    else
+      echo "# Domain table is not ready yet"
+    fi
   } > "$tmp_file"
   mv "$tmp_file" "$DOMAINS_FILE"
 }

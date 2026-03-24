@@ -139,6 +139,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      app:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost 25 || exit 1"]
       interval: 10s

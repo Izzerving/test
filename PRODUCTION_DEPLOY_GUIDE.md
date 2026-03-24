@@ -33,6 +33,7 @@ sudo ufw default allow outgoing
 sudo ufw allow 22/tcp      # SSH
 sudo ufw allow 80/tcp      # HTTP
 sudo ufw allow 443/tcp     # HTTPS
+sudo ufw allow 25/tcp      # SMTP (postfix)
 sudo ufw enable
 
 # Install fail2ban
@@ -61,9 +62,9 @@ docker compose version
 
 ```bash
 # Clone repository
-git clone https://github.com/Aburtik3/1.git anonkeymail
+git clone https://github.com/Izzerving/test.git anonkeymail
 cd anonkeymail
-git checkout codex/set-up-vps-for-anonkeymail
+git checkout work
 
 # Create .env file from example
 cp .env.example .env
