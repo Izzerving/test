@@ -48,3 +48,13 @@ export function generateSessionToken() {
 export function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
+
+function getSessionCookieSecret() {
+  return process.env.SESSION_COOKIE_SECRET || process.env.GUEST_COOKIE_SECRET || process.env.INGEST_API_KEY || "";
+}
+
+export function createSessionCookieSignature(token: string) {
+  const secret = getSessionCookieSecret();
+  if (!secret) return "";
+  return createHash("sha256").update(`${token}.${secret}`).digest("hex");
+}

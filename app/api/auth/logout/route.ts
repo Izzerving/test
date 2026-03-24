@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
 
     const response = NextResponse.json({ ok: true });
     response.cookies.set("akm_token", "", { path: "/", maxAge: 0 });
+    response.cookies.set("akm_token_sig", "", { path: "/", maxAge: 0 });
     return response;
   } catch (error) {
     await captureException(error, { path: "/api/auth/logout", method: "POST" });
