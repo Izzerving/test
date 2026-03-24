@@ -21,6 +21,7 @@ enum DomainTier {
 }
 
 enum DomainStatus {
+  draft
   active
   exhausted
   archived

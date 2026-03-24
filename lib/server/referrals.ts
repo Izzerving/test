@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 const REFERRAL_SIGNUP_BONUS_USD = "2.00";
 const REFERRAL_PAYMENT_PERCENT = 0.1;
 const REFERRAL_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const STARTUP_BONUS_ENABLED_KEY = "startup_bonus_enabled";
+const STARTUP_BONUS_USD_KEY = "startup_bonus_usd";
 
 type TxClient = Prisma.TransactionClient | PrismaClient;
 
@@ -98,38 +100,19 @@ export async function applySignupReferralBonus(params: { userId: string; referra
       return { applied: false, reason: "self_referral" as const };
     }
 
-    const existingBonus = await tx.referralBonus.findFirst({
-      where: {
-        referredId: user.id,
-        type: "SIGNUP"
-      },
-      select: { id: true }
-    });
-
     await tx.user.update({
       where: { id: user.id },
       data: { referredById: referrer.id }
     });
 
-    if (!existingBonus) {
-      await tx.referralBonus.create({
-        data: {
-          referrerId: referrer.id,
-          referredId: user.id,
-          type: "SIGNUP",
-          amountUsd: REFERRAL_SIGNUP_BONUS_USD
+    await tx.user.update({
+      where: { id: user.id },
+      data: {
+        referralBalance: {
+          increment: REFERRAL_SIGNUP_BONUS_USD
         }
-      });
-
-      await tx.user.update({
-        where: { id: referrer.id },
-        data: {
-          referralBalance: {
-            increment: REFERRAL_SIGNUP_BONUS_USD
-          }
-        }
-      });
-    }
+      }
+    });
 
     return {
       applied: true,
@@ -137,6 +120,36 @@ export async function applySignupReferralBonus(params: { userId: string; referra
       reason: "linked" as const
     };
   });
+}
+
+export async function getStartupBonusConfig() {
+  const settings = await prisma.globalSetting.findMany({
+    where: { key: { in: [STARTUP_BONUS_ENABLED_KEY, STARTUP_BONUS_USD_KEY] } },
+    select: { key: true, value: true }
+  });
+  const map = new Map(settings.map((item) => [item.key, item.value]));
+  return {
+    enabled: (map.get(STARTUP_BONUS_ENABLED_KEY) || "false") === "true",
+    amountUsd: map.get(STARTUP_BONUS_USD_KEY) || REFERRAL_SIGNUP_BONUS_USD
+  };
+}
+
+export async function maybeApplyStartupBonus(userId: string) {
+  const config = await getStartupBonusConfig();
+  if (!config.enabled || Number(config.amountUsd) <= 0) {
+    return { applied: false, amountUsd: "0.00" };
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      referralBalance: {
+        increment: config.amountUsd
+      }
+    }
+  });
+
+  return { applied: true, amountUsd: config.amountUsd };
 }
 
 async function maybeApplyPaymentReferralBonus(tx: Prisma.TransactionClient, paymentId: string) {

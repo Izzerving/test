@@ -13,6 +13,7 @@ export async function getSessionByToken(inputToken?: string) {
   });
 
   if (!session) return null;
+  if (session.endedAt) return null;
 
   if (session.user.deletedAt) {
     await prisma.session.deleteMany({ where: { userId: session.userId } });

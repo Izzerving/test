@@ -72,7 +72,7 @@ export default async function AdminHomePage() {
           <p className="text-sm uppercase tracking-[0.24em] text-muted">
             Admin control center
           </p>
-          <h1 className="text-3xl font-semibold">Админ-панель AnonKeyMail</h1>
+          <h1 className="text-3xl font-semibold">Админ-панель Time-Email</h1>
           <p className="max-w-3xl text-sm text-muted">
             Единая точка управления privacy-first почтой: пользователи, домены,
             рефералка, выплаты, платежи, нагрузка и глобальные настройки.

@@ -32,7 +32,7 @@ export default function DomainsClient({ initialDomains, tierOptions }: { initial
   const [dateFilter, setDateFilter] = useState("");
   const [mailboxCountFilter, setMailboxCountFilter] = useState("");
   const [form, setForm] = useState<{ name: string; tier: DomainTier; maxMailboxes: string; dnsNs: string; transferAfterDays: string; transferToTier: string }>({ name: "", tier: DomainTier.FREE, maxMailboxes: "500", dnsNs: "", transferAfterDays: "", transferToTier: "" });
-  const [drafts, setDrafts] = useState<Record<string, { tier: DomainTier; dnsNs: string; maxMailboxes: string; transferAfterDays: string; transferToTier: string }>>(() => Object.fromEntries(initialDomains.map((domain) => [domain.id, { tier: domain.tier, dnsNs: domain.dnsNs, maxMailboxes: String(domain.maxMailboxes), transferAfterDays: domain.transferAfterDays ? String(domain.transferAfterDays) : "", transferToTier: domain.transferToTier ?? "" }])));
+  const [drafts, setDrafts] = useState<Record<string, { tier: DomainTier; status: DomainStatus; dnsNs: string; maxMailboxes: string; transferAfterDays: string; transferToTier: string }>>(() => Object.fromEntries(initialDomains.map((domain) => [domain.id, { tier: domain.tier, status: domain.status, dnsNs: domain.dnsNs, maxMailboxes: String(domain.maxMailboxes), transferAfterDays: domain.transferAfterDays ? String(domain.transferAfterDays) : "", transferToTier: domain.transferToTier ?? "" }])));
 
   const filteredDomains = useMemo(() => initialDomains.filter((domain) => {
     if (nameFilter && !domain.name.toLowerCase().includes(nameFilter.toLowerCase())) return false;
@@ -122,15 +122,16 @@ export default function DomainsClient({ initialDomains, tierOptions }: { initial
                   <TableCell>{domain.mailboxCount} / {domain.maxMailboxes}</TableCell>
                   <TableCell>{new Date(domain.createdAt).toLocaleString()}</TableCell>
                   <TableCell>
-                    <div className="grid gap-2 xl:grid-cols-[150px_160px_140px_180px_auto_auto_auto]">
+                    <div className="grid gap-2 xl:grid-cols-[120px_120px_160px_140px_180px_auto_auto_auto]">
                       <Select value={draft?.tier || domain.tier} onValueChange={(value) => setDrafts((current) => ({ ...current, [domain.id]: { ...current[domain.id], tier: value as DomainTier } }))} options={tierOptions.map((tier) => ({ label: tier, value: tier }))} />
+                      <Select value={draft?.status || domain.status} onValueChange={(value) => setDrafts((current) => ({ ...current, [domain.id]: { ...current[domain.id], status: value as DomainStatus } }))} options={(Object.values(DomainStatus) as DomainStatus[]).map((status) => ({ label: status, value: status }))} />
                       <Input value={draft?.dnsNs || ""} onChange={(event) => setDrafts((current) => ({ ...current, [domain.id]: { ...current[domain.id], dnsNs: event.target.value } }))} placeholder="DNS/NS" />
                       <Input value={draft?.maxMailboxes || String(domain.maxMailboxes)} onChange={(event) => setDrafts((current) => ({ ...current, [domain.id]: { ...current[domain.id], maxMailboxes: event.target.value } }))} placeholder="maxMailboxes" />
                       <div className="grid grid-cols-2 gap-2">
                         <Input value={draft?.transferAfterDays || ""} onChange={(event) => setDrafts((current) => ({ ...current, [domain.id]: { ...current[domain.id], transferAfterDays: event.target.value } }))} placeholder="N дней" />
                         <Select value={draft?.transferToTier || ""} onValueChange={(value) => setDrafts((current) => ({ ...current, [domain.id]: { ...current[domain.id], transferToTier: value } }))} placeholder="Tier" options={tierOptions.map((tier) => ({ label: tier, value: tier }))} />
                       </div>
-                      <Button onClick={() => mutate("/api/admin/domains", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "update", domainId: domain.id, tier: draft.tier, dnsNs: draft.dnsNs || undefined, maxMailboxes: Number(draft.maxMailboxes) || domain.maxMailboxes, transferAfterDays: draft.transferAfterDays ? Number(draft.transferAfterDays) : null, transferToTier: draft.transferToTier || null }) }, `Домен ${domain.name} обновлён.`)}>Сохранить</Button>
+                      <Button onClick={() => mutate("/api/admin/domains", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "update", domainId: domain.id, tier: draft.tier, status: draft.status, dnsNs: draft.dnsNs || undefined, maxMailboxes: Number(draft.maxMailboxes) || domain.maxMailboxes, transferAfterDays: draft.transferAfterDays ? Number(draft.transferAfterDays) : null, transferToTier: draft.transferToTier || null }) }, `Домен ${domain.name} обновлён.`)}>Сохранить</Button>
                       <Button className="bg-amber-700" onClick={() => mutate("/api/admin/domains", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "archive", domainId: domain.id }) }, `Домен ${domain.name} архивирован.`)}>Archive</Button>
                       <Button className="bg-red-700" onClick={() => mutate("/api/admin/domains", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domainId: domain.id }) }, `Домен ${domain.name} удалён.`)}>Delete</Button>
                     </div>

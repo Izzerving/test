@@ -19,6 +19,7 @@ const patchSchema = z.discriminatedUnion("action", [
     action: z.literal("update"),
     domainId: z.string().min(1),
     tier: z.nativeEnum(DomainTier),
+    status: z.nativeEnum(DomainStatus).optional(),
     maxMailboxes: z.number().int().min(1).max(100000),
     dnsNs: z.string().optional(),
     transferAfterDays: z.number().int().min(1).max(3650).nullable().optional(),
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
     where: { name },
     update: {
       tier: parsed.data.tier,
-      status: DomainStatus.active,
+      status: DomainStatus.draft,
       maxMailboxes: parsed.data.maxMailboxes,
       dnsNs: parsed.data.dnsNs,
       transferAfterDays: parsed.data.transferAfterDays,
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
     create: {
       name,
       tier: parsed.data.tier,
-      status: DomainStatus.active,
+      status: DomainStatus.draft,
       maxMailboxes: parsed.data.maxMailboxes,
       dnsNs: parsed.data.dnsNs,
       transferAfterDays: parsed.data.transferAfterDays,
@@ -92,6 +93,7 @@ export async function PATCH(request: NextRequest) {
     where: { id: parsed.data.domainId },
     data: {
       tier: parsed.data.tier,
+      status: parsed.data.status,
       maxMailboxes: parsed.data.maxMailboxes,
       dnsNs: parsed.data.dnsNs || null,
       transferAfterDays: parsed.data.transferAfterDays ?? null,

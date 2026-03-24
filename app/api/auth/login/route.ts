@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
   generateSessionToken,
+  createSessionCookieSignature,
   hashLookupSecret,
   hashToken,
   verifySecret,
@@ -116,6 +117,16 @@ export async function POST(request: NextRequest) {
       path: "/",
       maxAge: 60 * 60 * 24 * 30,
     });
+    const tokenSig = createSessionCookieSignature(sessionToken);
+    if (tokenSig) {
+      response.cookies.set("akm_token_sig", tokenSig, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 30,
+      });
+    }
 
     return response;
   } catch (error) {

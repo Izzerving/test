@@ -5,7 +5,7 @@ import { Toaster } from "sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AnonKeyMail",
+  title: "Time-Email",
   description: "Privacy-first temporary email service",
   manifest: "/manifest.json",
 };
@@ -53,7 +53,7 @@ export default async function RootLayout({
                 Технические работы
               </h1>
               <p className="mt-4 text-sm text-amber-100">
-                Публичная часть AnonKeyMail временно недоступна. Пожалуйста,
+                Публичная часть Time-Email временно недоступна. Пожалуйста,
                 попробуйте снова позже.
               </p>
             </div>

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { DeletionInterval, Tier } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { buildDeleteAt, generateOneTimeKey, hashLookupSecret, hashSecret } from "@/lib/server/auth";
-import { generateUniqueReferralCode } from "@/lib/server/referrals";
+import { generateUniqueReferralCode, maybeApplyStartupBonus } from "@/lib/server/referrals";
 import { z } from "zod";
 import { captureException, createLogger, getErrorMessage } from "@/lib/server/observability";
 
@@ -54,9 +54,12 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    const startupBonus = await maybeApplyStartupBonus(user.id);
+
     return NextResponse.json({
       user,
       oneTimeKey,
+      startupBonusUsd: startupBonus.applied ? Number(startupBonus.amountUsd) : 0,
       warning: "Ключ больше никогда не будет показан. Потеря ключа = безвозвратная потеря аккаунта."
     });
   } catch (error) {

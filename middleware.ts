@@ -9,8 +9,19 @@ installGlobalErrorHandlers();
 const protectedPaths = ["/dashboard", "/api/auth/me", "/api/auth/sessions", "/api/auth/deletion-policy", "/api/mailboxes"];
 const adminPaths = ["/admin", "/api/admin"];
 
+function toHex(buffer: ArrayBuffer) {
+  return [...new Uint8Array(buffer)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
 
-export function middleware(request: NextRequest) {
+async function isValidSessionCookie(token: string, signature: string) {
+  const secret = process.env.SESSION_COOKIE_SECRET || process.env.GUEST_COOKIE_SECRET || process.env.INGEST_API_KEY || "";
+  if (!secret) return false;
+  const payload = new TextEncoder().encode(`${token}.${secret}`);
+  const digest = await crypto.subtle.digest("SHA-256", payload);
+  return toHex(digest) === signature;
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const needsSession = protectedPaths.some((p) => pathname.startsWith(p));
@@ -18,7 +29,13 @@ export function middleware(request: NextRequest) {
 
   if (needsSession) {
     const token = request.cookies.get("akm_token")?.value;
-    if (!token) {
+    const tokenSig = request.cookies.get("akm_token_sig")?.value;
+    if (!token || !tokenSig) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const sessionCookieOk = await isValidSessionCookie(token, tokenSig);
+    if (!sessionCookieOk) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
   }
