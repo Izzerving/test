@@ -154,7 +154,7 @@ export default function HomePage() {
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 p-4 sm:p-6">
       <header className="rounded-xl border border-border bg-card/80 p-4 backdrop-blur">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold">AnonKeyMail</h1>
+          <h1 className="text-2xl font-bold">Time-Email</h1>
           <div className="flex flex-wrap gap-2">
             <select
               value={lang}

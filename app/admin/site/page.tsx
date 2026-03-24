@@ -32,6 +32,18 @@ const siteSettingFields = [
     placeholder: "50",
   },
   {
+    key: "startup_bonus_enabled",
+    label: "Стартовый бонус включён",
+    type: "boolean",
+    description: "Выдавать бонус новым пользователям при регистрации.",
+  },
+  {
+    key: "startup_bonus_usd",
+    label: "Стартовый бонус, USD",
+    type: "number",
+    placeholder: "2",
+  },
+  {
     key: "support_email",
     label: "Support email",
     type: "text",

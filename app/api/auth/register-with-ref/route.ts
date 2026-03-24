@@ -3,7 +3,7 @@ import { DeletionInterval, Tier } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { buildDeleteAt, generateOneTimeKey, hashLookupSecret, hashSecret } from "@/lib/server/auth";
-import { applySignupReferralBonus, generateUniqueReferralCode } from "@/lib/server/referrals";
+import { applySignupReferralBonus, generateUniqueReferralCode, maybeApplyStartupBonus } from "@/lib/server/referrals";
 import { captureException, createLogger, getErrorMessage } from "@/lib/server/observability";
 
 const registerSchema = z.object({
@@ -74,10 +74,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Referral code could not be applied" }, { status: 400 });
     }
 
+    const startupBonus = await maybeApplyStartupBonus(user.id);
+
     return NextResponse.json({
       user,
       oneTimeKey,
       signupReferralBonusUsd: 2,
+      startupBonusUsd: startupBonus.applied ? Number(startupBonus.amountUsd) : 0,
       warning: "Ключ больше никогда не будет показан. Потеря ключа = безвозвратная потеря аккаунта."
     });
   } catch (error) {

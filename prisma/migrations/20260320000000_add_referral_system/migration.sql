@@ -61,8 +61,20 @@ ALTER TABLE "ReferralBonus" ADD CONSTRAINT "ReferralBonus_referrerId_fkey" FOREI
 -- AddForeignKey
 ALTER TABLE "ReferralBonus" ADD CONSTRAINT "ReferralBonus_referredId_fkey" FOREIGN KEY ("referredId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- AddForeignKey
-ALTER TABLE "ReferralBonus" ADD CONSTRAINT "ReferralBonus_fromPaymentId_fkey" FOREIGN KEY ("fromPaymentId") REFERENCES "Payment"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+-- AddForeignKey (guarded for broken/legacy databases where "Payment" can be missing)
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.tables
+    WHERE table_schema = 'public'
+      AND table_name = 'Payment'
+  ) THEN
+    ALTER TABLE "ReferralBonus"
+      ADD CONSTRAINT "ReferralBonus_fromPaymentId_fkey"
+      FOREIGN KEY ("fromPaymentId") REFERENCES "Payment"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END $$;
 
 -- AddForeignKey
 ALTER TABLE "Withdrawal" ADD CONSTRAINT "Withdrawal_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

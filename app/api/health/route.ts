@@ -89,7 +89,7 @@ export async function GET() {
     return NextResponse.json({
       ok,
       strictMode,
-      service: "anonkeymail",
+      service: "time-email",
       ts: new Date().toISOString(),
       uptimeSec: Math.floor(process.uptime()),
       checks: { env: envHealth, db, redis, postfix, realtime }
