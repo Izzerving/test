@@ -132,7 +132,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-anonkeymail}
       POSTFIX_SYNC_INTERVAL_SECONDS: "30"
     volumes:
-      - ./postfix-config:/etc/postfix:rw
       - postfix_spool:/var/spool/virtual
     ports:
       - "25:25"
