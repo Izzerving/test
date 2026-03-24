@@ -79,16 +79,26 @@ END $$;
 -- AddForeignKey
 ALTER TABLE "Withdrawal" ADD CONSTRAINT "Withdrawal_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- Seed minimum withdrawal setting
-INSERT INTO "GlobalSetting" ("id", "key", "value", "description", "updatedAt")
-VALUES (
-  'seed_min_withdrawal_usd',
-  'min_withdrawal_usd',
-  '50',
-  'Minimum withdrawal amount in USD for referral payouts',
-  CURRENT_TIMESTAMP
-)
-ON CONFLICT ("key") DO UPDATE
-SET "value" = EXCLUDED."value",
-    "description" = EXCLUDED."description",
-    "updatedAt" = CURRENT_TIMESTAMP;
+-- Seed minimum withdrawal setting (guarded for legacy databases where "GlobalSetting" can be missing)
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.tables
+    WHERE table_schema = 'public'
+      AND table_name = 'GlobalSetting'
+  ) THEN
+    INSERT INTO "GlobalSetting" ("id", "key", "value", "description", "updatedAt")
+    VALUES (
+      'seed_min_withdrawal_usd',
+      'min_withdrawal_usd',
+      '50',
+      'Minimum withdrawal amount in USD for referral payouts',
+      CURRENT_TIMESTAMP
+    )
+    ON CONFLICT ("key") DO UPDATE
+    SET "value" = EXCLUDED."value",
+        "description" = EXCLUDED."description",
+        "updatedAt" = CURRENT_TIMESTAMP;
+  END IF;
+END $$;
